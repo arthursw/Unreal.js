@@ -34,7 +34,10 @@ module.exports = function() {
 	let typedict = {
 		integer: 'int'
 	}
-	let lines = _.map(schema.properties,(v,k) => {
+        let ctorLines = _.map(schema.properties,(v,k) => {
+            return v.default ? `this.${k} = ${v.default};` : null
+        })
+        let propertiesLines = _.map(schema.properties,(v,k) => {
 	        function resolve(v) {
 	            if (v.$ref) {
 	                return resolve(resolve_ref(v.$ref))  
@@ -55,8 +58,11 @@ module.exports = function() {
         let code = `
 (function () {
 	class ${section} ${schema.struct ? '/* Struct */' : ''}{
+		ctor() {
+		    	${ctorLines.join('\n')}
+		}
 		properties() {
-			${lines.join('\n')}		 
+			${propertiesLines.join('\n')}		 
 		}
 	}
 	return ${section}
